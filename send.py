@@ -12,8 +12,8 @@ def send_requests():
         response = requests.get(url)
         request_count += 1
         print(f"Requests sent: {request_count}")
-        time.sleep(0.5)
 
-for i in range(20):
+for i in range(200):
     t = threading.Thread(target=send_requests)
     t.start()
+    time.sleep(0.1)
