@@ -1,6 +1,6 @@
-import requests
 import time
 import concurrent.futures
+import requests
 
 url = 'https://visitcount.itsvg.in/api?id=Robobo2022&icon=0&color=0'
 
@@ -19,6 +19,7 @@ def send_requests():
                 time.sleep(60)
             else:
                 print(f"\rError {response.status_code} occurred", end='')
+            time.sleep(1)
         except:
             print("\rError occurred while making request", end='')
 
