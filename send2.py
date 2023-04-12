@@ -23,7 +23,7 @@ def send_requests():
         except:
             print("\rError occurred while making request", end='')
 
-with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
-    futures = [executor.submit(send_requests) for i in range(2000)]
+with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+    futures = [executor.submit(send_requests) for i in range(5000)]
     for future in concurrent.futures.as_completed(futures):
         pass
