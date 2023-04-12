@@ -2,7 +2,7 @@ import threading
 import requests
 import time
 
-url = ''
+url = 'https://visitcount.itsvg.in/api?id=Robobo2022&icon=0&color=0'
 
 request_count = 0
 
