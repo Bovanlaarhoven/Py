@@ -1,6 +1,6 @@
-import time
 import threading
 import requests
+import time
 
 url = 'https://visitcount.itsvg.in/api?id=Robobo2022&icon=0&color=0'
 
@@ -12,14 +12,14 @@ def send_requests():
         response = requests.get(url)
         if response.status_code == 200:
             request_count += 1
-            print(f"Requests sent: {request_count}")
+            print(f"\rRequests sent: {request_count}", end='')
             time.sleep(1)
         elif response.status_code == 429:
-            print("Rate limited, waiting and retrying...")
+            print("\rRate limited, waiting and retrying...", end='')
             time.sleep(60)
         else:
-            print(f"Error {response.status_code} occurred")
+            print(f"\rError {response.status_code} occurred", end='')
 
-for i in range(20):
+for i in range(200):
     t = threading.Thread(target=send_requests)
     t.start()
