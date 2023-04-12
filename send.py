@@ -20,6 +20,6 @@ def send_requests():
         else:
             print(f"\rError {response.status_code} occurred", end='')
 
-for i in range(200):
+for i in range(2000):
     t = threading.Thread(target=send_requests)
     t.start()
