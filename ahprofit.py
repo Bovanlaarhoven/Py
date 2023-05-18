@@ -1,89 +1,94 @@
 import requests
-import json
 import humanize
 
-# Take response in as JSON to find total pages
-r = requests.get("https://api.hypixel.net/skyblock/auctions").json()
+min_profit_input = input("Enter the minimum profit (example: 100k, 1m): ")
+min_profit_input = min_profit_input.lower().strip()
 
-total_pages = int(r['totalPages'])
-print(f"Total Pages: {total_pages}")
-
-items = []
-num_items_to_show = 10  # Number of items to display
-
-webhook_url = "https://discord.com/api/webhooks/1108713124317626368/UNZjkTkJXjII8DveZF9Jjsq772qqbFXOrtsj8izkRY3gVZsZkAN4orykKUAdEQMHU2IE"  # Replace with your actual webhook URL
-
-# Function to format the prices
-def format_price(price):
-    if price >= 1000000:  # If the price is a million or more
-        return humanize.intword(price).replace("M", "m")
-    elif price >= 1000:  # If the price is a thousand or more
-        return humanize.intword(price).replace("K", "k")
-    else:
-        return str(price)
-
-# Loop through every page
-for i in range(0, total_pages):
-    r = requests.get(f"https://api.hypixel.net/skyblock/auctions?page={i}").json()
-    auctions = r['auctions']
-
-    # Get each individual auction
-    for auction in auctions:
-        # Check if it is a BIN auction with a BIN price
-        if auction.get("auction_type") == "BIN" and auction.get("starting_bid"):
-            bin_price = auction["starting_bid"]
-            # Append the BIN price and UUID
-            items.append([bin_price, auction["uuid"]])
-
-    # Tracking progress
-    print(f"Checking Page {i+1}/{total_pages}")
-
-# Sort the items by BIN price
-if not items:
-    # If no data found
-    print("No BIN items found in the auctions.")
+if min_profit_input.endswith("k"):
+    min_profit = int(min_profit_input[:-1]) * 1000
+elif min_profit_input.endswith("m"):
+    min_profit = int(min_profit_input[:-1]) * 1000000
 else:
+    try:
+        min_profit = int(min_profit_input)
+    except ValueError:
+        print("Invalid input. Exiting the script.")
+        exit()
+
+while True:
+    # Take response in as JSON to find total pages
+    r = requests.get("https://api.hypixel.net/skyblock/auctions").json()
+
+    total_pages = int(r['totalPages'])
+    print(f"Total Pages: {total_pages}")
+
+    items = []
+
+    for i in range(0, total_pages):
+        r = requests.get(f"https://api.hypixel.net/skyblock/auctions?page={i}").json()
+        if 'auctions' in r:
+            auctions = r['auctions']
+
+            for auction in auctions:
+                if auction.get("bin") and auction.get("starting_bid"):
+                    bin_price = int(auction["starting_bid"])
+                    item_name = auction.get("item_name", "Unknown")
+                    items.append([bin_price, item_name, auction["uuid"]])
+
+        print(f"\rChecking Page {i+1}/{total_pages}", end="")
+
+    if not items:
+        # If no data found
+        print("\nNo BIN items found in the auctions.")
+        continue
+
     items.sort(key=lambda x: x[0])
 
-    # Check if there are at least two items
+    best_profit_item = None
+    best_profit_percentage = 0
+
     if len(items) >= 2:
-        lowest_bin = items[0][0]
-        second_lowest_bin = items[1][0]
+        for i in range(len(items) - 1):
+            lowest_bin = items[i][0]
+            second_lowest_bin = items[i + 1][0]
+            price_difference = second_lowest_bin - lowest_bin
 
-        # Calculate the price difference
-        price_difference = second_lowest_bin - lowest_bin
+            if (
+                price_difference > 0
+                and second_lowest_bin <= 10000000
+                and lowest_bin <= 10000000
+            ):
+                profit_percentage = (price_difference / lowest_bin) * 100
 
-        if price_difference >= 10000:
-            lowest_bin_uuid = items[0][1]
+                if (
+                    profit_percentage > best_profit_percentage
+                    and price_difference >= min_profit
+                ):
+                    best_profit_item = items[i]
+                    best_profit_percentage = profit_percentage
 
-            # Generate the auction link with /viewauction command
-            auction_link = f"/viewauction {lowest_bin_uuid}"
+        if best_profit_item:
+            bin_price = best_profit_item[0]
+            item_name = best_profit_item[1]
+            item_uuid = best_profit_item[2]
 
-            # Format the BIN prices
-            formatted_lowest_bin = format_price(lowest_bin)
-            formatted_second_lowest_bin = format_price(second_lowest_bin)
+            auction_link = f"/viewauction {item_uuid}"
 
-            # Compose the payload for the webhook request
-            payload = {
-                "embeds": [
-                    {
-                        "title": "Lowest BIN Item with Significant Price Difference",
-                        "description": f"Lowest BIN: {formatted_lowest_bin}\nSecond Lowest BIN: {formatted_second_lowest_bin}\nPrice Difference: {price_difference}\nAuction Link: {auction_link}",
-                        "color": 16711680  # Red color
-                    }
-                ]
-            }
+            profit_amount = second_lowest_bin - lowest_bin
 
-        # Set the headers for the webhook request
-        headers = {
-            "Content-Type": "application/json"
-        }
+            formatted_bin_price = humanize.intword(bin_price)
+            formatted_profit_amount = humanize.intword(profit_amount)
+            formatted_profit_percentage = f"{best_profit_percentage:.2f}%"
 
-        # Send the webhook request
-        response = requests.post(webhook_url, data=json.dumps(payload), headers=headers)
-
-        # Check if the request was successful
-        if response.status_code == 204:
-            print("Webhook request sent successfully.")
+            print("\nBest Profitable Item:")
+            print(f"Item Name: {item_name}")
+            print(f"BIN Price: {formatted_bin_price}")
+            print(f"Profit Percentage: {formatted_profit_percentage}")
+            print(f"Profit Amount: {formatted_profit_amount}")
+            print(f"Auction Link: {auction_link}")
         else:
-            print(f"Failed to send webhook request. Status Code: {response.status_code}")
+            print("\nNo items with a profitable price difference found.")
+    else:
+        print("\nInsufficient items to calculate price difference.")
+
+    print("------------------------------")
