@@ -84,14 +84,20 @@ def main():
     
     if len(results):
 
-        if NOTIFY: 
+        if NOTIFY:
+            lowest_bin = max(results, key=lambda entry: entry[1])[0][2]
+            second_lowest = max(results, key=lambda entry: entry[1])[1]
+
+            notification_title = f"2e LBIN: {second_lowest:,}"
+            notification_subtitle = f"LBIN: {lowest_bin:,}"
+
             Notifier.notify(
-                'Notification Title',
+                notification_title,
                 title=max(results, key=lambda entry: entry[1])[0][1],
-                subtitle="Lowest BIN: " + f'{max(results, key=lambda entry: entry[1])[0][2]:,}' + "\nSecond Lowest: " + f'{max(results, key=lambda entry: entry[1])[1]:,}',
+                subtitle=notification_subtitle,
                 sound='default',
             )
-        
+
         df = pd.DataFrame(['/viewauction ' + str(max(results, key=lambda entry: entry[1])[0][0])])
         df.to_clipboard(index=False, header=False)
         
