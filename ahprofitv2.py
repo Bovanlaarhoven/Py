@@ -1,8 +1,7 @@
 import asyncio
 import re
 import os
-op = os.name == 'nt'
-if op: import winsound
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from timeit import default_timer
 import time
@@ -113,10 +112,17 @@ def main():
         df.to_clipboard(index=False,header=False) # copies most valuable auction to clipboard (usually just the only auction cuz very uncommon for there to be multiple
         
         done = default_timer() - START_TIME
-        if op: winsound.Beep(500, 500) # emits a frequency 500hz, for 500ms
+        play_sound()  # Play the sound
         for result in results:
             print("Auction UUID: " + str(result[0][0]) + " | Item Name: " + str(result[0][1]) + " | Item price: {:,}".format(result[0][2]), " | Second lowest BIN: {:,}".format(result[1]) + " | Time to refresh AH: " + str(round(done, 2)))
         print("\nLooking for auctions...")
+
+def play_sound():
+    # Check the OS and play sound accordingly
+    if os.name == 'nt':
+        winsound.Beep(500, 500) # emits a frequency 500hz, for 500ms
+    elif os.name == 'posix':
+        subprocess.call(["afplay", "/System/Library/Sounds/Glass.aiff"])
 
 print("Looking for auctions...")
 main()
