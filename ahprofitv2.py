@@ -108,9 +108,7 @@ def main():
         print("\nLooking for auctions...")
 
 def play_sound():
-    if os.name == 'nt':
-        winsound.Beep(500, 500)
-    elif os.name == 'posix':
+    if os.name == 'posix':
         subprocess.call(["afplay", "/System/Library/Sounds/Glass.aiff"])
 
 print("Looking for auctions...")
