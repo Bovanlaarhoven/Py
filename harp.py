@@ -1,46 +1,28 @@
+from pyautogui import *
 import pyautogui
-from pynput import keyboard
+import time
+import keyboard
+import random
+import win32api, win32con
 
-# Function to check if a pixel is white
-def is_pixel_white(x, y):
-    pixel_color = pyautogui.pixel(x, y)
-    # Assuming white pixels have RGB values (255, 255, 255)
-    return pixel_color == (255, 255, 255)
+#Tile 1 Position: X:  581 Y:  400 RGB: ( 77,  80, 115)
+#Tile 2 Position: X:  682 Y:  400 RGB: (  0,   0,   0)
+#Tile 3 Position: X:  770 Y:  400 RGB: ( 79,  82, 116)
+#Tile 4 Position: X:  869 Y:  400 RGB: ( 80,  83, 116)
 
-# Function to simulate a human-like click
-def human_like_click(x, y):
-    # Move the cursor near the target location
-    pyautogui.moveTo(x + 5, y + 5, duration=0.5)
+def click(x,y):
+    win32api.SetCursorPos((x,y))
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
+    time.sleep(0.1) #This pauses the script for 0.1 seconds
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
 
-    # Click at the target location
-    pyautogui.click(x, y)
-    print(f"Clicked at pixel ({x}, {y})")
-
-# Create a listener for keyboard events
-def on_press(key):
-    if key == keyboard.Key.esc:
-        # Stop the listener by returning False
-        return False
-
-# Start the listener
-listener = keyboard.Listener(on_press=on_press)
-listener.start()
-
-# Loop until 'esc' key is pressed
-while listener.is_alive():
-    # Get the screen dimensions
-    screen_width, screen_height = pyautogui.size()
-
-    # Iterate over each pixel on the screen
-    for x in range(screen_width):
-        for y in range(screen_height):
-            # Check if the pixel is white
-            if is_pixel_white(x, y):
-                # Click the pixel if it's white
-                human_like_click(x, y)
-
-    # Add a small delay between iterations
-    pyautogui.sleep(0.1)
-
-# Stop the listener
-listener.stop()
+while keyboard.is_pressed('q') == False:
+    
+    if pyautogui.pixel(581, 400)[0] == 0:
+        click(581, 400)
+    if pyautogui.pixel(682, 400)[0] == 0:
+        click(682, 400)
+    if pyautogui.pixel(770, 400)[0] == 0:
+        click(770, 400)
+    if pyautogui.pixel(869, 400)[0] == 0:
+        click(869, 400)
