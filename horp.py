@@ -11,8 +11,8 @@ coordinates = [
     (1064, 523)
 ]
 
-previous_colors = {}  # Store the previous color of each pixel
-is_pixel_checking = False  # Flag to indicate if pixel checking is active
+previous_colors = {} 
+is_pixel_checking = False
 
 def check_and_click_pixels():
     for coord in coordinates:
@@ -26,19 +26,19 @@ def check_and_click_pixels():
         previous_color = previous_colors[coord]
         if pixel_color != previous_color:
             pyautogui.click(x, y)
-            break  # Stop checking other coordinates after the first click
+            break
 
 def on_press(key):
     global is_pixel_checking
 
-    if key == keyboard.Key.space:  # Start/Stop the pixel checking on Space key press
+    if key == keyboard.Key.space: 
         is_pixel_checking = not is_pixel_checking
         if is_pixel_checking:
             print("Pixel checking started.")
         else:
             print("Pixel checking stopped.")
 
-    if key == keyboard.Key.esc:  # Stop the script on Escape key press
+    if key == keyboard.Key.esc:
         return False
 
 with keyboard.Listener(on_press=on_press) as listener:
