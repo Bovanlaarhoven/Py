@@ -19,7 +19,6 @@ else:
 num_items_to_display = int(input("Enter the number of profitable items to display: "))
 
 while True:
-    # Take response in as JSON to find total pages
     r = requests.get("https://api.hypixel.net/skyblock/auctions").json()
 
     total_pages = int(r['totalPages'])
@@ -41,7 +40,6 @@ while True:
         print(f"\rChecking Page {i+1}/{total_pages}", end="")
 
     if not items:
-        # If no data found
         print("\nNo BIN items found in the auctions.")
         continue
 
