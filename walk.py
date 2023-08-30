@@ -1,30 +1,21 @@
-import keyboard
 import pyautogui
 import time
 
-def main():
-    key_to_press = 'a'
-    running = True
-
-    while running:
-        if keyboard.is_pressed('num 7'):
-            key_to_press = 'd'
-            pyautogui.keyDown(key_to_press)
-            pyautogui.mouseDown()
-        elif keyboard.is_pressed('num 8'):
-            key_to_press = 'a'
-            pyautogui.keyDown(key_to_press)
-            pyautogui.mouseUp()
-        else:
-            pyautogui.keyUp(key_to_press)
-            pyautogui.mouseUp()
-
-        if keyboard.is_pressed('num 9'):
-            pyautogui.keyUp(key_to_press)
-            pyautogui.mouseUp() 
-            running = False
-
-        time.sleep(0.1)
+def hold_key(key, duration):
+    start_time = time.time()
+    while time.time() - start_time < duration:
+        pyautogui.keyDown(key)
+        time.sleep(0.01)
+        pyautogui.keyUp(key)
 
 if __name__ == "__main__":
-    main()
+    print("Press 'Ctrl+C' to exit the script.")
+    while True:
+        if pyautogui.keyDown('ctrl') and pyautogui.press('c'):
+            print("Exiting the script.")
+            break
+
+        pyautogui.mouseDown()  # Hold left mouse button
+        hold_key('d', 250)     # Hold 'd' key for 250 seconds
+        hold_key('a', 250)     # Hold 'a' key for 250 seconds
+        pyautogui.mouseUp()    # Release left mouse button
