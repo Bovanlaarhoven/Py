@@ -6,7 +6,7 @@ def hold_key(key, duration):
     start_time = time.time()
     while time.time() - start_time < duration:
         pyautogui.keyDown(key)
-        time.sleep(0.01)  # A small delay to prevent spamming key presses
+        time.sleep(0.01)
 
 if __name__ == "__main__":
     print("Press 'Ctrl+C' to exit the script.")
@@ -15,9 +15,9 @@ if __name__ == "__main__":
             print("Exiting the script.")
             break
         
-        time.sleep(1)  # Introduce a 1-second delay
+        time.sleep(1)
 
-        random_duration = random.uniform(251, 253)
+        random_duration = random.uniform(25, 27)
         pyautogui.mouseDown(button='left')
         
         hold_key('d', random_duration)
