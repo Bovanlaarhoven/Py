@@ -1,37 +1,40 @@
-import aiohttp
-import asyncio
+import requests
+import threading
 from fake_useragent import UserAgent
 from tqdm import tqdm
-from concurrent.futures import ThreadPoolExecutor
 
 link = input("Enter the link: ")
 amount_request = int(input("Enter the amount of requests: "))
-num_threads = int(input("Enter the number of threads: "))
 
 ua = UserAgent()
-REQUEST_INTERVAL = 1
+SUCCESS_COUNT = 0
 
-success_count = 0
-
-async def send_request(session, progress_bar):
-    global success_count
+def send_request(session, progress_bar):
+    global SUCCESS_COUNT
     try:
-        headers = {'User-Agent': ua.random}
-        async with session.post(link, headers=headers) as response:
-            response.raise_for_status()
-            success_count += 1
-            progress_bar.update(1)
-    except aiohttp.ClientError as e:
+        response = session.get(link, timeout=5)  # Add timeout to avoid long waits
+        response.raise_for_status()
+        SUCCESS_COUNT += 1
+        progress_bar.update(1)
+    except requests.RequestException as e:
         print(f"Error: {e}")
-        await asyncio.sleep(2)
 
-async def main():
-    async with aiohttp.ClientSession() as session:
-        with tqdm(total=amount_request, desc="Sending Requests", unit="req") as progress_bar:
-            tasks = [send_request(session, progress_bar) for _ in range(amount_request)]
-            with ThreadPoolExecutor(max_workers=num_threads) as executor:
-                await asyncio.gather(*tasks, loop=asyncio.get_event_loop(), return_exceptions=True)
+def main():
+    session = requests.Session()
+    session.headers.update({'User-Agent': ua.random})  # Set User-Agent globally
 
-asyncio.run(main())
+    progress_bar = tqdm(total=amount_request, desc="Sending Requests", unit="req")
+    threads = [threading.Thread(target=send_request, args=(session, progress_bar)) for _ in range(amount_request)]
 
-print(f"\nSuccessfully sent {success_count} out of {amount_request} requests.")
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
+    progress_bar.close()
+
+if __name__ == "__main__":
+    main()
+
+print(f"\nSuccessfully sent {SUCCESS_COUNT} out of {amount_request} requests.")
