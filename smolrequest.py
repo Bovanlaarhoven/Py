@@ -2,9 +2,11 @@ import aiohttp
 import asyncio
 from fake_useragent import UserAgent
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
 
 link = input("Enter the link: ")
 amount_request = int(input("Enter the amount of requests: "))
+num_threads = int(input("Enter the number of threads: "))
 
 ua = UserAgent()
 REQUEST_INTERVAL = 1
@@ -27,7 +29,8 @@ async def main():
     async with aiohttp.ClientSession() as session:
         with tqdm(total=amount_request, desc="Sending Requests", unit="req") as progress_bar:
             tasks = [send_request(session, progress_bar) for _ in range(amount_request)]
-            await asyncio.gather(*tasks)
+            with ThreadPoolExecutor(max_workers=num_threads) as executor:
+                await asyncio.gather(*tasks, loop=asyncio.get_event_loop(), return_exceptions=True)
 
 asyncio.run(main())
 
