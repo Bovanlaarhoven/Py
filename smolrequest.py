@@ -1,44 +1,34 @@
-import requests
-import threading
-import time
-import sys
+import aiohttp
+import asyncio
+from fake_useragent import UserAgent
+from tqdm import tqdm
 
 link = input("Enter the link: ")
 amount_request = int(input("Enter the amount of requests: "))
 
-num_requests = 0
-num_requests_lock = threading.Lock()
-barrier = threading.Barrier(amount_request)
+ua = UserAgent()
+REQUEST_INTERVAL = 1
 
-def send_Request():
-    global num_requests
-    while True:
-        try:
-            with num_requests_lock:
-                if num_requests >= amount_request:
-                    break
-            response = requests.post(link)
+success_count = 0
+
+async def send_request(session, progress_bar):
+    global success_count
+    try:
+        headers = {'User-Agent': ua.random}
+        async with session.post(link, headers=headers) as response:
             response.raise_for_status()
-            num_requests += 1
-            sys.stdout.write(f"\rSent request {num_requests}")
-            sys.stdout.flush()
-        except (requests.exceptions.RequestException, ConnectionError) as e:
-            print(f"Error: {e}")
-            time.sleep(2 ** min(num_requests, 10))
-        finally:
-            barrier.wait() 
-            time.sleep(0.1)
+            success_count += 1
+            progress_bar.update(1)
+    except aiohttp.ClientError as e:
+        print(f"Error: {e}")
+        await asyncio.sleep(2)
 
-threads = []
+async def main():
+    async with aiohttp.ClientSession() as session:
+        with tqdm(total=amount_request, desc="Sending Requests", unit="req") as progress_bar:
+            tasks = [send_request(session, progress_bar) for _ in range(amount_request)]
+            await asyncio.gather(*tasks)
 
-for i in range(amount_request):
-    t = threading.Thread(target=send_Request)
-    threads.append(t)
+asyncio.run(main())
 
-for i in range(amount_request):
-    threads[i].start()
-
-for i in range(amount_request):
-    threads[i].join()
-
-print()
+print(f"\nSuccessfully sent {success_count} out of {amount_request} requests.")
