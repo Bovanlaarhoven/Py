@@ -12,7 +12,7 @@ SUCCESS_COUNT = 0
 def send_request(session, progress_bar):
     global SUCCESS_COUNT
     try:
-        response = session.get(link, timeout=10)
+        response = session.get(link, timeout=5)
         response.raise_for_status()
         SUCCESS_COUNT += 1
         progress_bar.update(1)
