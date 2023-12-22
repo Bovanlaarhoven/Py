@@ -1,9 +1,14 @@
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from pynput import keyboard
+
+website_url = 'https://monkeytype.com/'
+chrome_options = Options()
+chrome_options.add_argument('--start-maximized') 
+driver = webdriver.Chrome(options=chrome_options)
+driver.get(website_url)
 
 def on_activate():
     type_letters()
@@ -22,17 +27,10 @@ def extract_letters(driver):
 def simulate_typing(driver, text):
     for letter in text:
         driver.switch_to.active_element.send_keys(letter)
-        time.sleep(0.1)  # Adjust the delay as needed
+
 
 def type_letters():
-    website_url = 'https://monkeytype.com/'
-    chrome_options = Options()
-    chrome_options.add_argument('--start-maximized') 
-    driver = webdriver.Chrome(options=chrome_options)
-
     try:
-        driver.get(website_url)
-        time.sleep(2)
 
         result_text = extract_letters(driver)
         print(result_text)
@@ -43,8 +41,7 @@ def type_letters():
         print(f"An error occurred: {str(e)}")
 
     finally:
-        driver.quit()
+        pass
 
-# Register the hotkey
 with keyboard.GlobalHotKeys({'<ctrl>+<alt>': on_activate}) as h:
     h.join()
