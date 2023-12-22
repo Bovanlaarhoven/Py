@@ -2,7 +2,11 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.options import Options
+from pynput import keyboard
+
+def on_activate():
+    type_letters()
 
 def extract_letters(driver):
     words_container = driver.find_element(By.ID, 'words')
@@ -16,42 +20,31 @@ def extract_letters(driver):
     return result_text.strip()
 
 def simulate_typing(driver, text):
-    textarea = driver.find_element(By.CLASS_NAME, 'mt-type-input')
-
-    actions = ActionChains(driver)
-    actions.move_to_element(textarea)
-
     for letter in text:
-        actions.send_keys(letter)
-        time.sleep(0.1)
+        driver.switch_to.active_element.send_keys(letter)
+        time.sleep(0.1)  # Adjust the delay as needed
 
-    actions.perform()
+def type_letters():
+    website_url = 'https://monkeytype.com/'
+    chrome_options = Options()
+    chrome_options.add_argument('--start-maximized') 
+    driver = webdriver.Chrome(options=chrome_options)
 
-def click_consent_button(driver):
-    consent_button = driver.find_element(By.XPATH, '//button[@aria-label="Consent"]')
-    consent_button.click()
+    try:
+        driver.get(website_url)
+        time.sleep(2)
 
-website_url = 'https://monkeytype.com/'
+        result_text = extract_letters(driver)
+        print(result_text)
 
-driver = webdriver.Chrome()
+        simulate_typing(driver, result_text)
 
-try:
-    driver.get(website_url)
-    time.sleep(10)
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
 
-    # Click the "Consent" button
-    click_consent_button(driver)
+    finally:
+        driver.quit()
 
-    # Wait for the button click to take effect
-    time.sleep(2)
-
-    result_text = extract_letters(driver)
-    print(result_text)
-
-    simulate_typing(driver, result_text)
-
-except Exception as e:
-    print(f"An error occurred: {str(e)}")
-
-finally:
-    driver.quit()
+# Register the hotkey
+with keyboard.GlobalHotKeys({'<ctrl>+<alt>': on_activate}) as h:
+    h.join()
